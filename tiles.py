@@ -13,9 +13,9 @@ class Tile:
         self.image_size:tuple[int,int] = (416,32)
         self.near_by_mines:int = 0
         self.is_mine:bool = False
-        self.is_clicked:bool = True
+        self.is_clicked:bool = False
         self.flaged:bool = False
-        self.cant_be_mine = False
+        self.cant_be_mine:bool = False
         self.hitbox = pygame.rect.Rect(self.pos[0],self.pos[1],self.size,self.size)
         
 

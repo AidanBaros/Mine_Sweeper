@@ -3,9 +3,9 @@ from tiles import Tile
 import random
 
 class Grid:
-    def __init__(self,x_size:int,y_size:int,num_mines:int,tile_images:str):
-        self.x_size:int = x_size
-        self.y_size:int = y_size
+    def __init__(self,size:tuple[int,int],num_mines:int,tile_images:str):
+        self.x_size:int = size[1]
+        self.y_size:int = size[0]
         self.num_mines:int = num_mines
         self.tile_images:str = tile_images
         self.grid:list[list[Tile]] = []
