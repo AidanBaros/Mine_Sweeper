@@ -27,7 +27,6 @@ class Game:
         self.queue:list[Tile] = [] 
         
 
-
     def run(self):
         while self.Running:
             #self.clock.tick(10)
@@ -69,6 +68,7 @@ class Game:
                             self.grid[int(y+i.y)][int(x+i.x)].cant_be_mine = True
                         self.mine_gen()
                     if tile.is_mine and tile.flaged == False:
+                        tile.is_clicked = True
                         print("YOU LOOSE")
                     elif tile.nearby_mines > 0:
                         tile.is_clicked = True
@@ -126,6 +126,7 @@ class Game:
             if self.grid_size.x%2 == 0:
                 even_or_odd += 1
 
+
     def mine_gen(self):
         count = 0
         while True:
@@ -157,54 +158,3 @@ class Game:
                         self.grid[y-1][x+1].nearby_mines += 1
                     if x-1 >= 0 and y+1 < self.grid_size.y:
                         self.grid[y+1][x-1].nearby_mines += 1 
-        
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-while True:
-                        current_pos = (y,x)
-                        next_pos = None
-                        number_checked = 0
-                        check = 0
-                        for i in self.tiles_around:
-                            if ((current_pos[0]+i[0] >= 0 and 
-                                current_pos[0]+i[0] <= self.grid_size[0])
-                            and
-                                (current_pos[1]+i[1] >= 0 and 
-                                current_pos[1]+i[1] <= self.grid_size[1])
-                            ):
-                                grid_pos = self.grid.grid[current_pos[0]+i[0]][current_pos[1]+i[1]]
-                                number_checked += 1
-                            else:
-                                continue
-                            if not grid_pos.is_clicked:
-                                grid_pos.is_clicked = True
-                                if grid_pos.near_by_mines > 0 or i == (0,0):
-                                    grid_pos.checked = True
-                                if next_pos == None:
-                                    next_pos = grid_pos.grid_pos
-                        for j in self.tiles_around:
-                            if self.grid.grid[current_pos[0]+j[0]][current_pos[1]+j[1]].checked:
-                                check += 1
-                        if check == number_checked:
-                            break
-                        current_pos = next_pos
-
-"""
