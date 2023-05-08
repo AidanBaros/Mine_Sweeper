@@ -13,7 +13,7 @@ class Tile:
 
         self.nearby_mines:int = 0
         self.is_mine:bool = False
-        self.is_clicked:bool = False
+        self.clicked:bool = False
         self.flaged:bool = False
         self.cant_be_mine:bool = False
         
@@ -23,7 +23,7 @@ class Tile:
         offset = self.nearby_mines - 1
         if self.is_mine:
             offset = 8
-        if not self.is_clicked:
+        if not self.clicked:
             if self.checkerboard == 0:
                 screen.blit(self.image,self.screen_pos,(9*self.size,0,self.size,self.size))
             else:
