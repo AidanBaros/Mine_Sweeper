@@ -11,26 +11,25 @@ class Game:
         self.screen_size:Vector2 = Vector2(self.screen.get_size())
         self.clock = pygame.time.Clock()
         self.tile_images:str = "tile_images.png"
-        self.grid_size:Vector2 = Vector2(9,9)
-        self.tile_size:int = 0
-        self.num_mines:int = 50
+        self.grid_size:Vector2 = Vector2(10,8)
+        self.max_num_mines = int(self.grid_size.x * self.grid_size.y * 0.5)
+        self.num_mines:int = 10
         self.tiles_around:list[Vector2] = [
             Vector2(-1,-1),Vector2(0,-1),Vector2(1,-1),
             Vector2(-1,0),Vector2(0,0),Vector2(1,0),
             Vector2(-1,1),Vector2(0,1),Vector2(1,1)
         ]
+        if self.screen_size.x/self.grid_size.x < self.screen_size.y/self.grid_size.y:
+            self.tile_size = int(self.screen_size.x/self.grid_size.x)
+        else:
+            self.tile_size = int(self.screen_size.y/self.grid_size.y)
         self.grid:list[list[Tile]] = []
         self.create_grid()
 
         self.mouse_check = False
         self.Running:bool = True
         self.first_click:bool = False
-        self.queue:list[Tile] = [] 
-
-        if self.screen_size.x/self.grid_size.x < self.screen_size.y/self.grid_size.y:
-            self.tile_size = int(self.screen_size.x/self.grid_size.x)
-        else:
-            self.tile_size = int(self.screen_size.y/self.grid_size.y)
+        self.queue:list[Tile] = []
         
 
     def run(self):
@@ -170,7 +169,7 @@ class Game:
             self.grid.append([])
             for x in range(int(self.grid_size.x)):
                 even_or_odd += 1
-                self.grid[y].append(Tile(Vector2(x,y),self.tile_images, even_or_odd,self.tile_size))
+                self.grid[y].append(Tile(Vector2(x,y), self.tile_images, even_or_odd, self.tile_size))
             if self.grid_size.x%2 == 0:
                 even_or_odd += 1
 
@@ -181,35 +180,38 @@ class Game:
             ranx = random.randint(0,int(self.grid_size.x)-1)
             rany = random.randint(0,int(self.grid_size.y)-1)
             grid = self.grid[rany][ranx]
+            self.count()
+            continueflag = False
+            for i in self.tiles_around:
+                if self.offscreen(grid.grid_pos,i):
+                    if self.grid[int(rany+i.y)][int(ranx+i.x)].nearby_mines >= 7:
+                        continueflag = True
+                        break
+            if continueflag:
+                continue
             if grid.is_mine == False and grid.cant_be_mine == False:
                 grid.is_mine = True
                 count += 1
             if count == self.num_mines:
+                self.count()
                 break
-        
+
+
+    def count(self):
+        for row in self.grid:
+            for tile in row:
+                tile.nearby_mines = 0
+
         for y, row in enumerate(self.grid):
             for x, tile in enumerate(row):
                 if tile.is_mine:
-                    if x+1 < self.grid_size.x:
-                        self.grid[y][x+1].nearby_mines += 1
-                    if x-1 >= 0:
-                        self.grid[y][x-1].nearby_mines += 1
-                    if y+1 < self.grid_size.y:
-                        self.grid[y+1][x].nearby_mines += 1
-                    if y-1 >= 0:
-                        self.grid[y-1][x].nearby_mines += 1
-                    if x+1 < self.grid_size.x and y+1 < self.grid_size.y:
-                        self.grid[y+1][x+1].nearby_mines += 1
-                    if x-1 >= 0 and y-1 >= 0:
-                        self.grid[y-1][x-1].nearby_mines += 1
-                    if x+1 < self.grid_size.x and y-1 >= 0:
-                        self.grid[y-1][x+1].nearby_mines += 1
-                    if x-1 >= 0 and y+1 < self.grid_size.y:
-                        self.grid[y+1][x-1].nearby_mines += 1 
+                    for i in self.tiles_around:
+                        if self.offscreen(tile.grid_pos,i):
+                            self.grid[int(y+i.y)][int(x+i.x)].nearby_mines += 1 
 
 
     def win_check(self):
-        not_mine = (self.grid_size.x * self.grid_size.x) - self.num_mines
+        not_mine = (self.grid_size.x * self.grid_size.y) - self.num_mines
         check = 0
         for row in self.grid:
             for tile in row:
