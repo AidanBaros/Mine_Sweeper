@@ -2,14 +2,16 @@ import pygame
 from pygame.math import Vector2
 
 class Tile:
-    def __init__(self,grid_pos:Vector2, tile_images:str, checkerboard:int, size:int):
+    def __init__(self,grid_pos:Vector2, tile_images:str, checkerboard:int, size:int,  x_offset:int, y_offset:int):
         self.grid_pos:Vector2 = grid_pos
         self.tile_images = pygame.image.load(tile_images)
         self.size:int = size
         self.image = pygame.transform.scale(self.tile_images, (self.size*13,self.size))
         self.checkerboard:int = checkerboard%2
         self.screen_pos:Vector2 = Vector2(self.size*self.grid_pos.x,self.size*self.grid_pos.y)
-        self.hitbox = pygame.rect.Rect(self.screen_pos[0],self.screen_pos[1],self.size,self.size)
+        self.screen_pos.x += x_offset
+        self.screen_pos.y += y_offset
+        self.hitbox = pygame.rect.Rect(self.screen_pos.x,self.screen_pos.y,self.size,self.size)
 
         self.nearby_mines:int = 0
         self.is_mine:bool = False

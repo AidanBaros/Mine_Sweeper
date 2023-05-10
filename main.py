@@ -2,6 +2,7 @@ import pygame
 from pygame.math import Vector2
 import random
 from tiles import Tile
+import time
 
 
 class Game:
@@ -11,30 +12,49 @@ class Game:
         self.screen_size:Vector2 = Vector2(self.screen.get_size())
         self.clock = pygame.time.Clock()
         self.tile_images:str = "tile_images.png"
-        self.grid_size:Vector2 = Vector2(10,8)
+        self.flag = pygame.image.load(self.tile_images)
+        self.grid_size:Vector2 = Vector2(18,18)
         self.max_num_mines = int(self.grid_size.x * self.grid_size.y * 0.5)
-        self.num_mines:int = 10
+        self.num_mines:int = 100
+        self.center_on_x:bool
+        self.x_offset:int = int(self.screen_size.x * 0.05)
+        self.y_offset:int = int(self.screen_size.y * 0.05)
         self.tiles_around:list[Vector2] = [
             Vector2(-1,-1),Vector2(0,-1),Vector2(1,-1),
             Vector2(-1,0),Vector2(0,0),Vector2(1,0),
             Vector2(-1,1),Vector2(0,1),Vector2(1,1)
         ]
         if self.screen_size.x/self.grid_size.x < self.screen_size.y/self.grid_size.y:
-            self.tile_size = int(self.screen_size.x/self.grid_size.x)
+            self.tile_size = int((self.screen_size.x*0.9)/self.grid_size.x)
+            self.center_on_x = False
+            self.y_offset = int((self.screen_size.y - (self.grid_size.y * self.tile_size))/2)
         else:
-            self.tile_size = int(self.screen_size.y/self.grid_size.y)
+            self.tile_size = int((self.screen_size.y*0.9)/self.grid_size.y)
+            self.center_on_x = True
+            self.x_offset = int((self.screen_size.x - (self.grid_size.x * self.tile_size))/2)
         self.grid:list[list[Tile]] = []
         self.create_grid()
+        self.start_tick = pygame.time.get_ticks()
+        self.font = pygame.font.SysFont("Arial", 40)
+        self.flag = pygame.transform.scale(self.flag,(int(self.tile_size/4)*13,int(self.tile_size/4)))
 
         self.mouse_check = False
         self.Running:bool = True
         self.first_click:bool = False
         self.queue:list[Tile] = []
+        self.num_flags = 0
+
+        
         
 
     def run(self):
         while self.Running:
-            #self.clock.tick(60)
+            self.clock.tick(60)
+            self.num_flags = 0
+            for row in self.grid:
+                for tile in row:
+                    if tile.flaged:
+                        self.num_flags += 1
             for event in pygame.event.get():
                 mouse_press = pygame.mouse.get_pressed()
                 if event.type == pygame.QUIT:
@@ -53,18 +73,33 @@ class Game:
             if keys[pygame.K_LCTRL]:
                 self.Running = False
             
-            self.win_check()
+            seconds = round((pygame.time.get_ticks() - self.start_tick) / 1000)
+            print(seconds)
+            self.win_check(seconds)
             self.loose_check()
 
             self.reveal()
 
 
-            time = self.clock.tick() / 1000
-            self.screen.fill((255,255,255))
+            self.screen.fill((0,100,0))
             for row in self.grid:
                 for tile in row:
                     tile.draw(self.screen)
             
+            self.screen.blit(
+                self.flag,
+                (self.x_offset + (self.tile_size*self.grid_size.x) - self.tile_size/4,(self.screen_size.y*0.01)),
+                (int((self.tile_size/4)*7),0,int(self.tile_size/4),int(self.tile_size/4))
+                )
+            self.screen.blit(
+                self.font.render(str(self.num_mines - self.num_flags), True, "white"),
+                (self.x_offset + (self.tile_size*self.grid_size.x) - (self.tile_size/4)*2.5,(self.screen_size.y*0.005))
+                )
+            self.screen.blit(
+                self.font.render(str(seconds), True, "white"), 
+                (self.x_offset,(self.screen_size.y*0.005))
+                )
+
             pygame.display.flip()
 
 
@@ -169,7 +204,7 @@ class Game:
             self.grid.append([])
             for x in range(int(self.grid_size.x)):
                 even_or_odd += 1
-                self.grid[y].append(Tile(Vector2(x,y), self.tile_images, even_or_odd, self.tile_size))
+                self.grid[y].append(Tile(Vector2(x,y), self.tile_images, even_or_odd, self.tile_size, self.x_offset, self.y_offset))
             if self.grid_size.x%2 == 0:
                 even_or_odd += 1
 
@@ -210,7 +245,7 @@ class Game:
                             self.grid[int(y+i.y)][int(x+i.x)].nearby_mines += 1 
 
 
-    def win_check(self):
+    def win_check(self, seconds):
         not_mine = (self.grid_size.x * self.grid_size.y) - self.num_mines
         check = 0
         for row in self.grid:
@@ -218,7 +253,8 @@ class Game:
                 if not tile.is_mine and tile.clicked:
                     check += 1
         if not_mine == check:
-            print("YOU WIN")
+            print(f"Your time was {seconds} seconds")
+            self.Running = False
 
 
     def loose_check(self):
@@ -226,3 +262,8 @@ class Game:
             for tile in row:
                 if tile.is_mine and tile.clicked:
                     print("YOU LOOSE")
+                    self.Running = False
+
+
+    def UI(self):
+        pass
