@@ -4,6 +4,7 @@ import random
 from tiles import Tile
 from button import Button
 import time
+import sys
 
 
 class Game:
@@ -14,7 +15,7 @@ class Game:
         self.screen_size:Vector2 = Vector2(self.screen.get_size())
         self.clock:pygame.time.Clock = pygame.time.Clock()
         self.tile_images:str = "tile_images.png"
-        self.flag:pygame.image = pygame.image.load(self.tile_images)
+        self.flag = pygame.image.load(self.tile_images)
         self.grid_size:Vector2
         self.num_mines:int
         self.center_on_x:bool
@@ -27,6 +28,12 @@ class Game:
         ]
         self.font = pygame.font.SysFont("Roboto", int(self.screen_size.y/27))
         self.flag = pygame.transform.scale(self.flag,(int(self.screen_size.y * 0.04)*13,int(self.screen_size.y * 0.04)))
+        with open("scores.txt", "r") as file:
+            self.data = file.readlines()
+        self.data[0] = self.data[0].rstrip()
+        self.data[1] = self.data[1].rstrip()
+        self.data[2] = self.data[2].rstrip()
+        #self.scores = open("scores.txt", "r+")
 
         self.grid:list[list[Tile]] = []
         self.start_tick:int = 0
@@ -39,6 +46,7 @@ class Game:
         self.button_list:list[Button] = []
         self.seconds:int = 0
         self.last_time:str =  "---"
+        self.mode:int = 0
 
 
     def run(self):
@@ -209,6 +217,28 @@ class Game:
                     check += 1
         if not_mine == check:
             self.last_time = str(seconds)
+            if self.mode == 1:
+                try:
+                    if int(self.data[0]) > int(self.last_time):
+                        self.data[0] = f"{self.last_time}"
+                except:
+                    self.data[0] = f"{self.last_time}"
+            elif self.mode == 2:
+                try:
+                    if int(self.data[1]) > int(self.last_time):
+                        self.data[1] = f"{self.last_time}"
+                except:
+                    self.data[1] = f"{self.last_time}"
+            elif self.mode == 3:
+                try:
+                    if int(self.data[2]) > int(self.last_time):
+                        self.data[2] = f"{self.last_time}"
+                except:
+                    self.data[2] = f"{self.last_time}"
+            file =  open('scores.txt', 'w')
+            file.writelines(f"{self.data[0]}\n")
+            file.writelines(f"{self.data[1]}\n")
+            file.writelines(f"{self.data[2]}\n")
             self.Running = False
             self.in_UI = True
 
@@ -294,7 +324,7 @@ class Game:
                     self.mouse_check = False
             keys = pygame.key.get_pressed()
             if keys[pygame.K_LCTRL] or keys[pygame.K_ESCAPE]:
-                self.quit()
+                self.Running = False
             
             self.update()
 
@@ -302,12 +332,24 @@ class Game:
 
 
     def UI(self):
-        easy = Button("Easy",Vector2(self.screen_size.x/2 - (self.screen_size.x * 0.25),self.screen_size.y/1.25),Vector2(self.screen_size.x * 0.2,self.screen_size.y * 0.1),(0,190,0),(0,0,0))
+        easy = Button("EASY",Vector2(self.screen_size.x/2 - (self.screen_size.x * 0.25),self.screen_size.y/1.25),Vector2(self.screen_size.x * 0.2,self.screen_size.y * 0.1),(0,190,0),(0,0,0))
+        medium = Button("MEDIUM",Vector2(self.screen_size.x/2,self.screen_size.y/1.25),Vector2(self.screen_size.x * 0.2,self.screen_size.y * 0.1),(0,190,0),(0,0,0))
+        hard = Button("HARD",Vector2(self.screen_size.x/2 + (self.screen_size.x * 0.25),self.screen_size.y/1.25),Vector2(self.screen_size.x * 0.2,self.screen_size.y * 0.1),(0,190,0),(0,0,0))
+        last_score_title = Button("LAST TIME",Vector2(self.screen_size.x/2,self.screen_size.y/4),Vector2(self.screen_size.x * 0.2,self.screen_size.y * 0.1),(0,100,0),(0,0,0))
+        last_score = Button(str(self.last_time),Vector2(self.screen_size.x/2,self.screen_size.y/3),Vector2(self.screen_size.x * 0.2,self.screen_size.y * 0.1),(0,100,0),(0,0,0))
+        best_score_title = Button("BEST TIMES",Vector2(self.screen_size.x/2,self.screen_size.y/2),Vector2(self.screen_size.x * 0.2,self.screen_size.y * 0.1),(0,100,0),(0,0,0))
+        easy_text = Button(self.data[0],Vector2(self.screen_size.x/2 - (self.screen_size.x * 0.25),self.screen_size.y/1.7),Vector2(self.screen_size.x * 0.2,self.screen_size.y * 0.1),(0,100,0),(0,0,0))
+        medium_text = Button(self.data[1],Vector2(self.screen_size.x/2,self.screen_size.y/1.7),Vector2(self.screen_size.x * 0.2,self.screen_size.y * 0.1),(0,100,0),(0,0,0))
+        hard_text = Button(self.data[2],Vector2(self.screen_size.x/2 + (self.screen_size.x * 0.25),self.screen_size.y/1.7),Vector2(self.screen_size.x * 0.2,self.screen_size.y * 0.1),(0,100,0),(0,0,0))
         self.button_list.append(easy)
-        medium = Button("Medium",Vector2(self.screen_size.x/2,self.screen_size.y/1.25),Vector2(self.screen_size.x * 0.2,self.screen_size.y * 0.1),(0,190,0),(0,0,0))
         self.button_list.append(medium)
-        hard = Button("Hard",Vector2(self.screen_size.x/2 + (self.screen_size.x * 0.25),self.screen_size.y/1.25),Vector2(self.screen_size.x * 0.2,self.screen_size.y * 0.1),(0,190,0),(0,0,0))
         self.button_list.append(hard)
+        self.button_list.append(last_score_title)
+        self.button_list.append(last_score)
+        self.button_list.append(best_score_title)
+        self.button_list.append(easy_text)
+        self.button_list.append(medium_text)
+        self.button_list.append(hard_text)
 
         while self.in_UI:
             self.mouse_pos:tuple[int,int] = pygame.mouse.get_pos()
@@ -324,12 +366,15 @@ class Game:
                                 if button == easy:
                                     self.grid_size = Vector2(10,8)
                                     self.num_mines = 10
+                                    self.mode = 1
                                 if button == medium:
                                     self.grid_size = Vector2(18,14)
                                     self.num_mines = 40
+                                    self.mode = 2
                                 if button == hard:
                                     self.grid_size = Vector2(24,20)
                                     self.num_mines = 100
+                                    self.mode = 3
                                 self.start_up()
                                 self.in_UI = False
                                 self.Running = True
@@ -342,6 +387,8 @@ class Game:
             self.screen.fill((0,100,0))
             for button in self.button_list:
                 button.draw(self.screen)
+
+            
 
             pygame.display.flip()
 

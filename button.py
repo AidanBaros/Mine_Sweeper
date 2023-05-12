@@ -1,5 +1,5 @@
 import pygame
-from pygame import Vector2
+from pygame.math import Vector2
 
 class Button:
     def __init__(self, title:str, pos:Vector2, size:Vector2, button_color:tuple[int,int,int], text_color:tuple[int,int,int]):
@@ -9,7 +9,7 @@ class Button:
         self.button_color:tuple[int,int,int] = button_color
         self.text_color:tuple[int,int,int] = text_color
         self.rect:pygame.Rect = pygame.Rect(0,0,int(self.size.x), int(self.size.y))
-        self.rect.center = self.pos
+        self.rect.center = (int(self.pos.x),int(self.pos.y))
         self.font = pygame.font.SysFont("Roboto", int(self.size.y))
         self.text = self.font.render(self.title, True, text_color)
         self.text_rect = self.text.get_rect()
