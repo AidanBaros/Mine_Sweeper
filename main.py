@@ -247,7 +247,7 @@ class Game:
         for row in self.grid:
             for tile in row:
                 if tile.is_mine and tile.clicked:
-                    print("YOU LOOSE")
+                    self.last_time = "YOU LOST"
                     self.Running = False
                     self.in_UI = True
 
